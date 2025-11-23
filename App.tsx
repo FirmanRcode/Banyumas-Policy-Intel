@@ -3,6 +3,7 @@ import { DATASET } from './constants';
 import { DistrictData, SimulationState, TabView } from './types';
 import MapComponent from './components/MapComponent';
 import SimulationPanel from './components/SimulationPanel';
+import ComparisonPanel from './components/ComparisonPanel';
 import { ForecastChart } from './components/Charts';
 import { generateStrategicAnalysis, getBudgetRecommendation, chatWithAI } from './services/geminiService';
 import { 
@@ -15,7 +16,9 @@ import {
     MapPin,
     Send,
     X,
-    Banknote
+    Banknote,
+    ArrowRightLeft,
+    Download
 } from 'lucide-react';
 import { GenerateContentResponse } from '@google/genai';
 
@@ -51,6 +54,11 @@ function App() {
       });
       setAiAnalysis(""); 
       setBudgetResult(null);
+      // Reset tab to simulation when selecting a new district unless we are in comparison mode, 
+      // but generally good UX to reset or keep. Let's keep current tab if valid, else reset.
+      if (activeTab === TabView.DETAILS && !aiAnalysis) {
+          // optional: could reset tab
+      }
     }
   }, [selectedDistrictId]);
 
@@ -63,6 +71,25 @@ function App() {
         roadQuality: selectedDistrict.roadQuality,
       });
     }
+  };
+
+  const handleExportCSV = () => {
+    if (!selectedDistrict) return;
+
+    // Flatten historical poverty for CSV columns
+    const historicalHeaders = selectedDistrict.historicalPoverty.map(h => `Poverty ${h.year} (%)`).join(',');
+    const historicalValues = selectedDistrict.historicalPoverty.map(h => h.rate).join(',');
+
+    const headers = `ID,Name,Population,Poverty Rate (%),Health Facilities,Schools,UMKM,Road Quality (%),${historicalHeaders}`;
+    const values = `${selectedDistrict.id},"${selectedDistrict.name}",${selectedDistrict.population},${selectedDistrict.povertyRate},${selectedDistrict.healthFacilities},${selectedDistrict.schools},${selectedDistrict.umkm},${selectedDistrict.roadQuality},${historicalValues}`;
+
+    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + "\n" + values);
+    const link = document.createElement("a");
+    link.setAttribute("href", csvContent);
+    link.setAttribute("download", `${selectedDistrict.name}_data.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const runAnalysis = async () => {
@@ -171,15 +198,25 @@ function App() {
                         <span>Kemiskinan: <span className="font-semibold text-slate-800">{selectedDistrict.povertyRate}%</span></span>
                     </div>
                 </div>
-                <button onClick={() => setSelectedDistrictId(null)} className="p-2 hover:bg-slate-200 rounded-full text-slate-400">
-                    <X size={20} />
-                </button>
+                <div className="flex gap-2">
+                    <button 
+                        onClick={handleExportCSV} 
+                        className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors" 
+                        title="Export Data CSV"
+                    >
+                        <Download size={20} />
+                    </button>
+                    <button onClick={() => setSelectedDistrictId(null)} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
              </div>
 
              {/* Tabs */}
              <div className="flex border-b border-slate-200 px-6 gap-4 md:gap-6 shrink-0 overflow-x-auto">
                 <TabButton active={activeTab === TabView.SIMULATION} onClick={() => setActiveTab(TabView.SIMULATION)} label="Simulasi" icon={<Scale size={16} />} />
                 <TabButton active={activeTab === TabView.FORECAST} onClick={() => setActiveTab(TabView.FORECAST)} label="Peramalan" icon={<TrendingUp size={16} />} />
+                <TabButton active={activeTab === TabView.COMPARISON} onClick={() => setActiveTab(TabView.COMPARISON)} label="Bandingkan" icon={<ArrowRightLeft size={16} />} />
                 <TabButton active={activeTab === TabView.DETAILS} onClick={() => setActiveTab(TabView.DETAILS)} label="Analisis AI" icon={<FileText size={16} />} />
              </div>
 
@@ -225,6 +262,14 @@ function App() {
                             Kecamatan ini menunjukkan tren {selectedDistrict.historicalPoverty[selectedDistrict.historicalPoverty.length-1].rate < selectedDistrict.historicalPoverty[0].rate ? 'penurunan' : 'kenaikan'} kemiskinan sebesar {Math.abs(selectedDistrict.historicalPoverty[selectedDistrict.historicalPoverty.length-1].rate - selectedDistrict.historicalPoverty[0].rate).toFixed(1)}% dalam 5 tahun terakhir.
                         </div>
                     </div>
+                )}
+
+                {/* Content: Comparison */}
+                {activeTab === TabView.COMPARISON && (
+                    <ComparisonPanel 
+                        baseDistrict={selectedDistrict} 
+                        allDistricts={DATASET} 
+                    />
                 )}
 
                 {/* Content: AI Analysis */}
