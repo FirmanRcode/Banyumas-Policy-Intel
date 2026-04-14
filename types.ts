@@ -10,6 +10,11 @@ export interface DistrictData {
   umkm: number;
   roadQuality: number; // percentage of good roads
   historicalPoverty: { year: number; rate: number }[];
+  sekolah_sd?: number;
+  sekolah_smp?: number;
+  sekolah_sma?: number;
+  faskes_rs?: number;
+  faskes_puskesmas?: number;
 }
 
 export interface SimulationState {
@@ -20,12 +25,13 @@ export interface SimulationState {
 }
 
 export interface BudgetAllocation {
-  faskes: number;
-  sekolah: number;
-  umkm: number;
-  jalan_baik: number;
-  totalCost: number;
-  justification: string;
+  alokasi: {
+    faskes: number;
+    sekolah: number;
+    umkm: number;
+    jalan_baik: number;
+  };
+  justifikasi: string;
 }
 
 export enum TabView {

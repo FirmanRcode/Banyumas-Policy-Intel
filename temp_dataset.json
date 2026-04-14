@@ -1,11 +1,4 @@
-import { DistrictData } from './types';
-
-// Banyumas Center Coordinates
-export const MAP_CENTER: [number, number] = [-7.45, 109.16];
-export const MAP_ZOOM = 11;
-
-// Simplified Dataset based on the user's original provided CSV data + Approximate Geo Coordinates
-export const DATASET: DistrictData[] = [
+[
   {
     "id": "lumbir",
     "name": "Lumbir",
@@ -743,13 +736,4 @@ export const DATASET: DistrictData[] = [
     "faskes_rs": 4,
     "faskes_puskesmas": 2
   }
-];
-
-// Coefficient model for poverty prediction (Simplified Linear Regression weights)
-export const MODEL_COEFFICIENTS = {
-  intercept: 20.1,
-  health: -0.25,
-  schools: -0.08,
-  umkm: -0.00048,
-  road: -0.04
-};
+]
