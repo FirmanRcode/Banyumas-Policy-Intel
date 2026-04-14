@@ -177,9 +177,7 @@ Dataset yang digunakan merupakan data sintetis yang diinspirasi dari kondisi rii
 - Data historis kemiskinan 5 tahun (2019–2023)
 - Koordinat geografis untuk visualisasi peta
 
-> ⚠️ _Data ini bersifat ilustratif untuk keperluan demonstrasi dan tidak merepresentasikan data resmi pemerintah._
 
----
 
 ## 🔌 API & Proxy
 
